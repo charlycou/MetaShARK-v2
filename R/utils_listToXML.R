@@ -1,9 +1,6 @@
-#' @import XML
+#' @importFrom XML newXMLNode xmlValue
 listToXML <- function(node, sublist){
   children <- seq_along(sublist)[names(sublist) != ".attrs"]
-  
-  # if(identical(names(sublist), c("text", ".attrs")))
-  #   browser()
   
   sapply(children, function(child){
     child_name <- names(sublist)[[child]]
@@ -18,14 +15,10 @@ listToXML <- function(node, sublist){
       else
         listToXML(child_node, sublist[[child]])
     }
-    else{
-      # FIXME xmlValue adds unwanted text tag
-      # browser()
+    else {
       xmlValue(child_node) <- sublist[[child]]
     }
     
-    # if(any(grepl("text", names(unlist(xmlToList(node))))))
-    #   browser()
   })
   
   return(node)

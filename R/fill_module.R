@@ -407,6 +407,11 @@ fill <- function(id, main.env) {
     observeEvent(input$help, {
       showModal(main.env$EAL$help)
     })
+    
+    # MetaFIN ====
+    
+    MetaFIN(id = "metafin", main.env = main.env)
+    
     # (End) ====
   })
 }

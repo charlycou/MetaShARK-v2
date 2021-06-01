@@ -11,6 +11,14 @@ listToStructure <- function(
     return(structure(st))
   }
   
+  # Remove .attrs (R attributes for list)
+  if(".attrs" %in% names(st))
+    st <- st[names(st) != ".attrs"]
+  
+  # Remove NULL and list(NULL) values
+  if(any(sapply(st, identical, NULL)))
+    st <- st[!sapply(st, identical, NULL)]
+  
   # Check for names
   .names <- replace(
     names(st),
@@ -40,6 +48,8 @@ listToStructure <- function(
     )
   })
   
+  # if(length(.names) != length(st))
+  #   browser()
   names(st) <- .names
   
   return(st)
