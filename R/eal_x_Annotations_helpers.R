@@ -1,3 +1,52 @@
+# Build a tree list out of annotations.txt table
+# TODO make this recursive
+#' @noRd
+buildAnnotationTree <- function(annotation.table) {
+  .built <- list()
+  .toremove.sub <- c()
+  sapply(unique(annotation.table$context), function(con)
+    .built[[con]] <<- list()
+  )
+  sapply(1:nrow(annotation.table), function(ind) {
+    row <- annotation.table[ind,]
+    sub <- row$subject
+    con <- row$context
+    
+    # If subject is not a context,
+    if(isFALSE(sub %in% unique(annotation.table$context))) {
+      # add it to its context
+      .built[[con]] <<- c(.built[[con]], sub)
+    }
+    .toremove.sub <<- c(.toremove.sub, isFALSE(sub %in% unique(annotation.table$context)))
+  })
+  annotation.table <- annotation.table %>%
+    filter(subject %in% annotation.table$subject[!.toremove.sub]) %>%
+    select(c(context, subject))
+  sapply(nrow(annotation.table):1, function(ind) {
+    row <- annotation.table[ind,]
+    
+    .built[[row$context]] <<- c(.built[row$subject], .built[[row$context]])
+    .built[[row$subject]] <<- NULL
+  })
+  if(names(.built) == "eml")
+    .built <- .built[[1]]
+  # Turn into structures
+  .tree <- listToStructure(
+    .built,
+    node.attributes = list(sticon = "project-diagram", stopened = TRUE)
+  )
+  
+  return(.tree)
+}
+
+#' @noRd
+cleanAnnotation <- function(main.env) {
+  main.env$local.annotations$annotation.table <- data.frame()
+  main.env$local.annotations$tree.content <- c()
+  
+  return(main.env)
+}
+
 getPredicate <- function(api.key, ontology = "OBOREL", predicate) {
   if(missing(api.key) || !isTruthy(api.key)) {
     warning("No api key provided to getPredicate. Returning NULL.")

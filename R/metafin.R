@@ -32,7 +32,14 @@ MetaFINUI <- function(id, main.env) {
     ),
     column(
       8,
-      uiOutput(ns("form"))
+      uiOutput(ns("form")),
+      collapsibleUI(
+        ns("attributes"),
+        "Attributes",
+        tagList(
+          tags$div(id = "inserthere_mf_attributes")
+        )
+      )
     )
   )
 }
@@ -75,6 +82,8 @@ MetaFIN <- function(id, main.env) {
       req(eml.root())
       
       .out <- XML::xmlToList(eml.root())
+      message("Check for text in taxonId")
+      browser()
       .out <- renameList(.out)
       
       return(.out)
@@ -107,6 +116,8 @@ MetaFIN <- function(id, main.env) {
     })
     
     # Use tree ====
+  
+    # * get content ----
     content <- eventReactive(input$tree, {
       req(isContentTruthy(get_selected(input$tree)))
       
@@ -121,6 +132,7 @@ MetaFIN <- function(id, main.env) {
       return(.content)
     })
     
+    # * output form ----
     output$form <- renderUI({
       validate(
         need(isTruthy(content()), "Please select a node"),

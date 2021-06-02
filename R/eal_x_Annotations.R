@@ -1,50 +1,120 @@
 annotationsUI <- function(id) {
-  actionButton(NS(id, "annotate"), "", icon("project-diagram"))
+  ns <- NS(id)
+  
+  modalDialog(
+    title = sprintf("Annotations"),
+    tags$div(
+      id = "help",
+      tags$p("This window lets you annotate your dataset by adding semantic 
+             annotations to it. MetaShARK relies on the CEDAR resource center to
+             get adequate terms among more than 900 ontologies."),
+      tags$p("If you're not used to ontologies, click below to get further 
+             explanations."),
+      # Help ====
+      collapsibleUI(
+        ns("help"),
+        tagList(
+          tags$h3("Semantic annotations"),
+          tags$p(tags$b("Semantic annotation"), "is a way to reference any data and
+               make it understandable without ambiguity. For this, one uses a 
+               referenced vocabulary (also known as ", tags$b("controlled vocabulary"),
+               "or", tags$b("ontologies"), "). Anotating a dataset is the action
+               of adding terms coming from defined ontologies to describe the 
+               content of the data. According to this practice, anyone can refer
+               to the origin of the annotation and get a clear and shared definition
+               of the terms used to describe the data."),
+          tags$p("Ontologies can be produced by multiple groups: laboratories, scientific
+               assemblies, researcher teams, ... They are usually published at OWL
+               format. These objects represent a large volume and might be quite
+               complex."),
+          tags$p("MetaShARK uses", tags$code("{cedarr}"),"a lightweight R package 
+               to query the controlled vocabularies remotely. These vocabularies
+               are centralized in the CEDAR (Centor for Expanded Data Annotation 
+               and Retrieval). Get more information at:", tags$a("CEDAR website",
+               href="https://metadatacenter.org/"), ".")
+        )
+      )
+    ),
+    tags$div(
+      id = ns("content"),
+      # Tree ====
+      column(
+        3,
+        "Your dataset can be annotated on multiple levels: click any item of the
+        tree there after.",
+        shinyTree(ns("tree"))
+      ),
+      column(
+        9,
+        # Annotation ====
+        tags$div(
+          tags$h3(textOutput(ns("selected_node"))),
+          tags$div(id = "inserthere_annotations"),
+          actionButton(ns("add_ui"), label = NULL, icon = icon("plus"))
+        ),
+        # CEDAR browser ====
+        tags$div(
+          tags$h3("CEDAR browser"),
+          selectizeInput(
+            ns("cedar_ontology_list"),
+            "Select one or more ontology (default to all); search one by typing.",
+            choices = main.env$SEMANTICS$ontologies
+          ),
+          shinyWidgets::searchInput(
+            ns("cedar_search"),
+            "Type terms to build your annotation"
+          )
+        )
+      )
+    ),
+    footer = tags$span(
+      actionButton(ns("cancel"), "Cancel"),
+      shinyjs::disabled(actionButton(ns("validate"), "Validate"))
+    ),
+    size = "l",
+    easyClose = FALSE
+  )
 }
 
 annotations <- function(id, label, main.env) {
   moduleServer(id, function(input, output, session) {
-    observeEvent(input$annotate, {
-      modalDialog(
-        title = sprintf("Annotate %s", label),
-        tagList(
-          selectizeInput()
-        ),
-        footer = tags$span(
-          modalButton("Dismiss"),
-          actionButton("validate", "Validate")
-        )
+    # Require cedarr token
+    
+    
+    # On load
+    # Tree ====
+    # Update tree with content from setup step
+    observeEvent(main.env$local.annotations$tree.content, {
+      req(main.env$EAL$page != 1) 
+      req(isContentTruthy(main.env$local.annotations$tree.content))
+      devmsg("update tree", tag = "annotations")
+      shinyTree::updateTree(
+        session = session, 
+        treeId = "tree",
+        data = main.env$local.annotations$tree.content
       )
+    }, 
+    priority = -1,
+    label = "Annotations: update tree"
+    )
+    
+    # - Annotation UI
+    # -- make a way to search URI
+    # On cancel, return nothing
+    observeEvent(input$cancel, {
+      main.env <- cleanAnnotation(main.env)
+      removeModal()
+    })
+  
+    # On validate
+    observeEvent(input$validate, {
+      # - return modified save.variable
+      # - save save.variable
+      # - write new annotations.txt
     })
   })
 }
 
-#' annotationsUI <- function(id) {
-#'   ns <- NS(id)
-#'
-#'   return(
-#'     tagList(
-#'       useShinyjs(),
-#'       tags$div(
-#'         tags$br(),
-#'         actionButton(NS(id, "addui"), "", icon("plus")),
-#'         fluidRow(
-#'           column(11,
-#'             column(4, "Subject"),
-#'             column(4, "Predicate"),
-#'             column(4, "Object")
-#'           ),
-#'           style = "background-color: white; text-align: center"
-#'         ),
-#'         uiOutput(NS(id, "annotation_fields")),
-#'         tags$div(id = NS(id, "inserthere")),
-#'         tags$br(),
-#'         class = "inputBox wip"
-#'       ) # end of fluidPage
-#'     )
-#'   ) # end of return
-#' }
-#'
 #' #' @importFrom cedarr search
 #' #' @importFrom shinyjs disabled enable disable
 #' annotations <- function(input, output, session, save.variable, main.env) {
