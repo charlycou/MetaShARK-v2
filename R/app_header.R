@@ -179,11 +179,18 @@
   )
 
   # Local rv ====
+  # cache variable for EAL wizard
   assign(
     "local.rv",
     reactiveValues(),
     envir = main.env
-  )  
+  )
+  # cache variable for annotations along EAL modules
+  assign(
+    "local.annotations",
+    reactiveValues(),
+    envir = main.env
+  )
   
   # Patterns ====
   assign(

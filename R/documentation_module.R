@@ -65,7 +65,7 @@ documentation <- function(id, main.env) {
         incProgress(0.5)
       },
       message = "Rendering documentation.")
-    })
+    }, label = "doc: render doc")
 
     # UI render ====
 
