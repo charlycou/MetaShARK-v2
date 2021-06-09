@@ -13,6 +13,8 @@
 isContentTruthy <- function(x) {
   if (missing(x)) 
     stop("'x' is missing with no default.")
+  if(is.reactivevalues(x))
+    x <- reactiveValuesToList(x)
   
   return(isTruthy(x) && 
            ifelse(isTruthy(unlist(x)), sapply(unlist(x), isTruthy), FALSE))

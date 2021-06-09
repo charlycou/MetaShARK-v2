@@ -33,6 +33,7 @@ ui <- function() {
         padding-top: 5px !important;
       }
     "),
+    tags$head(tags$link(rel = "shortcut icon", href = "media/hex-MetaShARK_squared.png")),
     htmltools::includeCSS(
       system.file("app/www/styles.css", package = "MetaShARK")
     ),
